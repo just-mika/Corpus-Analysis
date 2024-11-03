@@ -38,28 +38,39 @@ func main() {
 		count(current)
 	}
 
-	/* Task 2: Corpus Analysis
-	Word Count: Word count: Calculate the total number of words.
+	/* Task 2: Corpus Analysis */
+	/*
+		Word Count: Word count: Calculate the total number of words.*/
+	getWordCount()
 
-	Vocabulary Size: Calculate the number of unique words
+	/*
+		Vocabulary Size: Calculate the number of unique words*/
+	uniqueWordCount()
+	/*
+		Word Frequency: Calculate the number of times each word appears in the
+		corpus, then sort them based on their frequency.*/
+	sortedWords := sortFrequencies(words)
+	//viewList(sortedWords, words)
 
-	Word Frequency: Calculate the number of times each word appears in the
-	corpus, then sort them based on their frequency.
+	/*
+		Character Frequency: Calculate the number of times each character appears in
+		the corpus (including letters, digits, and symbols), and then sort them based on
+		frequency */
+	sortedChars := sortFrequencies(characters)
+	viewList(sortedChars, characters)
+	/*
+		Frequency analysis. Identify the top 20 most frequent words and their counts.*/
+	getTop20(sortedWords)
 
-	Character Frequency: Calculate the number of times each character appears in
-	the corpus (including letters, digits, and symbols), and then sort them based on
-	frequency
-
-	Frequency analysis. Identify the top 20 most frequent words and their counts.
-
-	Stop Word Identification: Identify 10 common words (e.g., "the," "and," "a") that
-	don't provide significant meaning.
+	/*
+		Stop Word Identification: Identify 10 common words (e.g., "the," "and," "a") that
+		don't provide significant meaning.
 	*/
-	sorted := printWords()
-	if len(characters) > 0 {
-		symbolPie()
-	}
+	getStopWords(sortedWords)
 
-	wordCloud(sorted)
-	//printChars()
+	/* Task 3. Data Visualization */
+	//A word cloud of the top 20 most frequent words
+	//A bar chart / histogram showing the total number of posts per month
+	// A pie chart showing the distribution of the different symbols found in the corpus.
+	symbolPie()
 }

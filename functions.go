@@ -7,10 +7,24 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"slices"
 	"sort"
 	"strings"
 	"unicode"
 )
+
+var stopWords = []string{
+	"me", "my", "myself", "we", "our", "ours", "ourselves", "you", "your", "yours", "yourself",
+	"yourselves", "he", "him", "his", "himself", "she", "her", "hers", "herself", "it", "its",
+	"itself", "they", "them", "their", "theirs", "themselves", "what", "which", "who", "whom",
+	"this", "that", "these", "those", "am", "is", "are", "was", "were", "be", "been", "being",
+	"have", "has", "had", "having", "do", "does", "did", "doing", "an", "the", "and", "but",
+	"if", "or", "because", "as", "until", "while", "of", "at", "by", "for", "with", "about", "against",
+	"between", "into", "through", "during", "before", "after", "above", "below", "to", "from", "up",
+	"down", "in", "out", "on", "off", "over", "under", "again", "further", "then", "once", "here",
+	"there", "when", "where", "why", "how", "all", "any", "both", "each", "few", "more", "most", "other",
+	"some", "such", "no", "nor", "not", "only", "own", "same", "so", "than", "too", "very",
+	"can", "will", "just", "don", "should", "now"}
 
 func countChar(text string) {
 	text = strings.ToLower(text)
@@ -28,7 +42,18 @@ func detectWord(text string) {
 		}
 	}
 	if len(word) != 0 {
+		/*isStopWord := func() bool {
+			for _, stopWord := range stopWords {
+				if stopWord == word {
+					fmt.Println(stopWord + " detected")
+					return true
+				}
+			}
+			return false
+		}
+		if !isStopWord() {*/
 		words[word]++
+		//}
 	}
 }
 
@@ -49,33 +74,72 @@ func printChars() {
 	}
 }
 
-func printWords() []string {
-	fmt.Println("Words")
+func getWordCount() {
+	wordCount := 0
+	for _, count := range words {
+		wordCount += count
+	}
+	fmt.Println("Word Count: ", wordCount)
+}
 
-	// make an array of type string to store our keys
-	keys := []string{}
+func uniqueWordCount() {
+	wordCount := len(words)
+	/*stopWordCount := 0
+	for word, _ := range words {
+		if slices.Contains(stopWords, word) {
+			stopWordCount++
+		}
+	}
+	wordCount -= stopWordCount*/
+	fmt.Println("Unique Word Count: ", wordCount)
+}
+
+func sortFrequencies[K comparable, V int](list map[K]V) []K {
+	keys := make([]K, 0, len(list))
 
 	// iterate over the map and append all keys to our
 	// string array of keys
-	for key := range words {
+	for key := range list {
 		keys = append(keys, key)
 	}
 
 	// use the sort method to sort our keys array
 	sort.SliceStable(keys, func(i, j int) bool {
-		return words[keys[i]] > words[keys[j]]
+		return list[keys[i]] > list[keys[j]]
 	})
-	//i := 0
-	for _, key := range keys {
-		//if i != 20 {
-		fmt.Print(key + " = ")
-		fmt.Printf("%d\n", words[key])
-		//i++
-		//} else {
-		//	break
-		//}
-	}
 	return keys
+}
+
+func viewList[K comparable, V int](list []K, dict map[K]V) {
+	for _, item := range list {
+		var str string
+		switch i := any(item).(type) {
+		case rune:
+			str = string(i)
+		case string:
+			str = i
+		}
+		fmt.Println(str, "=", dict[item])
+	}
+}
+
+func getTop20(sortedWords []string) {
+	fmt.Println("Top 20 Words: ")
+	for i := 0; i < 20; i++ {
+		fmt.Println(i+1, ": "+sortedWords[i]+" = ", words[sortedWords[i]])
+	}
+}
+
+func getStopWords(sortedWords []string) {
+	fmt.Println("Stop Words: ")
+	wordNum := len(sortedWords)
+	stopCount := 0
+	for i := 0; i < wordNum && stopCount < 10; i++ {
+		if slices.Contains(stopWords, sortedWords[i]) {
+			fmt.Println(stopCount+1, ": "+sortedWords[i]+" = ", words[sortedWords[i]])
+			stopCount++
+		}
+	}
 }
 
 func wordCloud(sortedWords []string) {
@@ -85,7 +149,7 @@ func wordCloud(sortedWords []string) {
 func symbolPie() {
 	pie := charts.NewPie()
 	pie.SetGlobalOptions(charts.WithTitleOpts(opts.Title{Title: "Symbol Distribution"}))
-	data := func() []opts.PieData {
+	getSymbols := func() []opts.PieData {
 		symbols := make([]opts.PieData, 0)
 		var str_char string
 		for char, count := range characters {
@@ -97,7 +161,7 @@ func symbolPie() {
 		return symbols
 	}
 
-	pie.AddSeries("pie", data()).
+	pie.AddSeries("pie", getSymbols()).
 		SetSeriesOptions(charts.WithLabelOpts(
 			opts.Label{
 				Show:      opts.Bool(true),
