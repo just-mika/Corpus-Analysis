@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/go-echarts/go-echarts/v2/charts"
+	"github.com/go-echarts/go-echarts/v2/components"
 	"github.com/go-echarts/go-echarts/v2/opts"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -61,16 +63,6 @@ func count(curr []string) {
 	for _, word := range curr {
 		detectWord(word)
 		countChar(word)
-	}
-}
-
-func printChars() {
-	fmt.Println("\nChars")
-	for char, count := range characters {
-		if unicode.IsSymbol(char) || unicode.IsPunct(char) {
-			fmt.Print(string(char) + " = ")
-			fmt.Printf("%d\n", count)
-		}
 	}
 }
 
@@ -142,13 +134,88 @@ func getStopWords(sortedWords []string) {
 	}
 }
 
-func wordCloud(sortedWords []string) {
+func addMonth(date string) {
+	month := date[5:7]
 
+	switch month {
+	case "01":
+		postsPerMonth["Jan"]++
+	case "02":
+		postsPerMonth["Feb"]++
+	case "03":
+		postsPerMonth["Mar"]++
+	case "04":
+		postsPerMonth["Apr"]++
+	case "05":
+		postsPerMonth["May"]++
+	case "06":
+		postsPerMonth["Jun"]++
+	case "07":
+		postsPerMonth["Jul"]++
+	case "08":
+		postsPerMonth["Aug"]++
+	case "09":
+		postsPerMonth["Sep"]++
+	case "10":
+		postsPerMonth["Oct"]++
+	case "11":
+		postsPerMonth["Nov"]++
+	case "12":
+		postsPerMonth["Dec"]++
+	default:
+		fmt.Println("Invalid month")
+	}
 }
 
-func symbolPie() {
+func barGraph() *charts.Bar {
+	var months = []string{"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+		"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"}
+	getData := func() []opts.BarData {
+		items := make([]opts.BarData, 0)
+		for _, month := range months {
+			count := postsPerMonth[month]
+			items = append(items, opts.BarData{Name: month, Value: count})
+		}
+		return items
+	}
+	bar := charts.NewBar()
+	bar.SetGlobalOptions(
+		charts.WithTitleOpts(opts.Title{
+			Title: "Posts per Month",
+		}))
+
+	bar.SetXAxis(months).
+		AddSeries("Bar Graph", getData())
+	return bar
+}
+
+func wordCloud(sortedWords []string) *charts.WordCloud {
+	wc := charts.NewWordCloud()
+	wc.SetGlobalOptions(
+		charts.WithTitleOpts(opts.Title{
+			Title: "Top 20 words",
+		}))
+	getWords := func() []opts.WordCloudData {
+		wcData := make([]opts.WordCloudData, 0)
+		for i := 0; i < 20; i++ {
+			wcData = append(wcData, opts.WordCloudData{Name: sortedWords[i], Value: words[sortedWords[i]]})
+		}
+		return wcData
+	}
+	wc.AddSeries("Word Cloud", getWords()).
+		SetSeriesOptions(
+			charts.WithWorldCloudChartOpts(
+				opts.WordCloudChart{
+					SizeRange: []float32{14, 80},
+					Shape:     "cardioid",
+				}),
+		)
+	return wc
+}
+
+func symbolPie() *charts.Pie {
 	pie := charts.NewPie()
-	pie.SetGlobalOptions(charts.WithTitleOpts(opts.Title{Title: "Symbol Distribution"}))
+	pie.SetGlobalOptions(charts.WithTitleOpts(opts.Title{Title: "Symbols"}))
 	getSymbols := func() []opts.PieData {
 		symbols := make([]opts.PieData, 0)
 		var str_char string
@@ -161,21 +228,29 @@ func symbolPie() {
 		return symbols
 	}
 
-	pie.AddSeries("pie", getSymbols()).
+	pie.AddSeries("Symbol Pie", getSymbols()).
 		SetSeriesOptions(charts.WithLabelOpts(
 			opts.Label{
 				Show:      opts.Bool(true),
 				Formatter: "{b}: {c}",
 			}),
 		)
-	f, err := os.Create("symb_pie.html")
+	return pie
+}
+
+func makeCharts(sortedWords []string) {
+	page := components.NewPage()
+	page.AddCharts(
+		wordCloud(sortedWords),
+		barGraph(),
+		symbolPie(),
+	)
+	f, err := os.Create("charts.html")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer f.Close()
 
-	pie.Render(f)
-
-	cmd := exec.Command("rundll32", "url.dll,FileProtocolHandler", "symb_pie.html")
+	page.Render(io.MultiWriter(f))
+	cmd := exec.Command("rundll32", "url.dll,FileProtocolHandler", "charts.html")
 	cmd.Start()
 }
