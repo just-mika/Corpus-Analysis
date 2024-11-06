@@ -35,33 +35,12 @@ func countChar(text string) {
 	}
 }
 
-func detectWord(text string) {
-	word := ""
-	text = strings.ToLower(text)
-	for _, char := range text {
-		if unicode.IsLetter(char) {
-			word += string(char)
-		}
-	}
-	if len(word) != 0 {
-		/*isStopWord := func() bool {
-			for _, stopWord := range stopWords {
-				if stopWord == word {
-					fmt.Println(stopWord + " detected")
-					return true
-				}
-			}
-			return false
-		}
-		if !isStopWord() {*/
-		words[word]++
-		//}
-	}
-}
-
 func count(curr []string) {
 	for _, word := range curr {
-		detectWord(word)
+		if len(word) > 1 {
+			word = strings.ToLower(word)
+			words[word]++
+		}
 		countChar(word)
 	}
 }
@@ -76,13 +55,6 @@ func getWordCount() {
 
 func uniqueWordCount() {
 	wordCount := len(words)
-	/*stopWordCount := 0
-	for word, _ := range words {
-		if slices.Contains(stopWords, word) {
-			stopWordCount++
-		}
-	}
-	wordCount -= stopWordCount*/
 	fmt.Println("Unique Word Count: ", wordCount)
 }
 
