@@ -26,7 +26,7 @@ func main() {
 	defer csvfile.Close()
 
 	reader := csv.NewReader(csvfile)
-
+	first := true
 	for {
 		text, err := reader.Read()
 		if err == io.EOF {
@@ -34,6 +34,10 @@ func main() {
 		}
 		if err != nil {
 			log.Fatal(err)
+		}
+		if first {
+			first = false
+			continue
 		}
 		current := strings.Fields(text[3])
 		addMonth(text[2])
