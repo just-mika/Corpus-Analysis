@@ -13,6 +13,7 @@ import (
 	"sort"
 	"strings"
 	"unicode"
+	"unicode/utf8"
 )
 
 var stopWords = []string{
@@ -29,7 +30,6 @@ var stopWords = []string{
 	"can", "will", "just", "don", "should", "now"}
 
 func countChar(text string) {
-	text = strings.ToLower(text)
 	for _, char := range text {
 		characters[char]++
 	}
@@ -37,7 +37,7 @@ func countChar(text string) {
 
 func count(curr []string) {
 	for _, word := range curr {
-		if len(word) > 1 {
+		if utf8.RuneCountInString(word) > 1 {
 			word = strings.ToLower(word)
 			words[word]++
 		}
